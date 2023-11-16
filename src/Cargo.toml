@@ -1,0 +1,11 @@
+[package]
+name = "fake-crate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shit = { optional = true }
+
+[features]
+a = ["b", "dep:c"]
+z = ["b"]

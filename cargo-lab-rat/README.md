@@ -1,5 +1,10 @@
 Super simple Cargo project to study its behavior.
 
+# Links to key sections in Cargo source code
+- Lockfile generation: <https://github.com/rust-lang/cargo/blob/master/src/cargo/ops/cargo_generate_lockfile.rs#L24>
+  - Version resolution: <https://github.com/rust-lang/cargo/blob/master/src/cargo/ops/resolve.rs#L280>
+
+# Experiments before looking at Cargo source
 Running `cargo build --verbose` shows all (nontrivial) commands Cargo runs.
 
 On my Intel Mac running macOS, it runs (with absolute paths relativized)
