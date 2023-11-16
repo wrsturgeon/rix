@@ -12,6 +12,7 @@ let
 
   # Read `Cargo.toml`
   cfg = fromTOML (readFile ./Cargo.toml);
+  pkg-name = cfg.package.name;
 
   # If features were specified, use them; otherwise, use an empty set
   available-features = if cfg ? features then cfg.features else { };
@@ -26,7 +27,7 @@ let
   non-optional-deps = filter non-optional dep-names;
 
   # Look up implications of features and store as a set mapping each feature name to `null`
-  switches = let
+  all-switches = let
     enable = if explicit-features == null then
       ( # Use `default` if no features specified, and use an empty list if no default specified
         if available-features ? default then
@@ -37,36 +38,39 @@ let
       ( # Assert that all features actually exist
         listToAttrs (concatMap (feature:
           if !(hasAttr feature available-features) then
-            throw (concats [
-              "Requested feature `"
-              (toString feature)
-              "`, but no such feature exists"
-            ])
+            throw "Requested feature `${
+              toString feature
+            }`, but no such feature exists"
           else
             map (name: {
               inherit name;
               value = null;
             }) (getAttr feature available-features)) explicit-features));
-  in trace (concats [
-    "Your choice of features enabled the following switches: "
-    (concatStringsSep ", "
-      (map (s: concats [ ''"'' s ''"'' ]) (attrNames enable)))
-  ]) enable;
+  in trace
+  "(in crate `${pkg-name}`) Your choice of features enabled the following switches: ${
+    concatStringsSep ", " (map (s: ''"${s}"'') (attrNames enable))
+  }" enable;
 
+  # Find all dependencies enabled by features
   switched-deps = let
     li = filter (x: x != null) (map (d:
       let splat = splitString ":" d;
       in if length splat > 1 then (concats (tail splat)) else null)
-      (attrNames switches));
+      (attrNames all-switches));
   in map (x:
     if hasAttr x cfg-dependencies then
       x
     else
-      throw (concats [
-        "Features enabled the optional dependency `"
-        x
-        "`, but that dependency was never declared"
-      ])) li;
+      throw
+      "`${pkg-name}`: Features enabled the optional dependency `${x}`, but that dependency was never declared")
+  li;
 
-  dependencies = non-optional-deps ++ switched-deps;
+  dependencies = let
+    deps = listToAttrs (map (name: {
+      inherit name;
+      value = getAttr name cfg-dependencies;
+    }) (non-optional-deps ++ switched-deps));
+  in trace "(in crate `${pkg-name}`) All enabled dependencies: ${
+    concatStringsSep ", " (attrNames deps)
+  }" deps;
 in dependencies
