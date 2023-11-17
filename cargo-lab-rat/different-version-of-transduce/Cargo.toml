@@ -1,7 +1,0 @@
-[package]
-name = "different-version-of-transduce"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-transduce = "0.2.0"

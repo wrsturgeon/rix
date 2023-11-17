@@ -15,8 +15,12 @@ let
       args-opt = "-C opt-level=3 -C embed-bitcode=no";
       link-deps = builtins.concatStringsSep "" (map (dep-name:
         "--extern ${dep-name}=${
-          let dep-info = builtins.getAttr dep-name cfg.dependencies;
-          in recurse pkgs dep-info.path dep-info.features
+          let
+            dep-info = builtins.getAttr dep-name cfg.dependencies;
+            drv = recurse pkgs
+              (import ./canonicalize-path.nix dir dep-name dep-info)
+              dep-info.features;
+          in import ./find-rlib.nix "${drv}"
         } ") (builtins.attrNames cfg.dependencies));
     in pkgs.stdenv.mkDerivation {
       inherit pname src system version;

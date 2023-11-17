@@ -3,7 +3,7 @@ let
   # Imports
   inherit (builtins)
     attrNames concatMap concatStringsSep filter getAttr hasAttr length
-    listToAttrs readDir readFile tail toString;
+    listToAttrs readDir readFile substring stringLen tail toString;
   concats = concatStringsSep "";
   splitString = # https://github.com/NixOS/nixpkgs/blob/master/lib/strings.nix#L614
     sep: s:
@@ -16,18 +16,19 @@ let
     "${dir}/Cargo.toml"
   else
     throw
-    "No `Cargo.toml` found in the provided directory. Here's what was found: [${
+    "No `Cargo.toml` found in the provided directory `${dir}`. Here's what was found: [${
       toString (attrNames ls)
     }]";
   cfg = fromTOML (readFile cargo-dot-toml);
   cfg-package = if cfg ? package then
     cfg.package
   else
-    throw "No `[package]` section in `Cargo.toml`";
+    throw "No `[package]` section in `Cargo.toml` at ${cargo-dot-toml}.";
   pkg-name = if cfg-package ? name then
     import ./canonicalize-name.nix cfg-package.name
   else
-    throw "No `name` field under `[package]` in `Cargo.toml`";
+    throw
+    "No `name` field under `[package]` in `Cargo.toml` at ${cargo-dot-toml}.";
 
   # Standardized log message tagged with the crate name
   log = msg: val: builtins.trace "(in crate ${pkg-name}) ${msg}" val;
@@ -58,13 +59,13 @@ let
           if !(hasAttr feature available-features) then
             throw "Requested feature `${
               toString feature
-            }`, but no such feature exists"
+            }` for crate `${pkg-name}`, but no such feature exists"
           else
             map (name: {
               inherit name;
               value = null;
             }) (getAttr feature available-features)) explicit-features));
-  in log "Your choice of features enabled the following switches: ${
+  in log "Features enabled the following switches: ${
     concatStringsSep ", " (map (s: ''"${s}"'') (attrNames enable))
   }" enable;
 
@@ -83,10 +84,19 @@ let
   li;
 
   dependencies = let
-    deps = listToAttrs (map (name: {
-      name = import ./canonicalize-name.nix name;
-      value = getAttr name cfg-dependencies;
-    }) (non-optional-deps ++ switched-deps));
+    deps = listToAttrs (map (name:
+      let cname = import ./canonicalize-name.nix name;
+      in {
+        name = cname;
+        value = getAttr name cfg-dependencies // {
+          features = let
+            prefix = "${cname}/";
+            prefix-len = stringLen prefix;
+          in map (s: substring prefix-len (stringLen s - prefix-len + 1) s)
+          (filter (d: substring 0 prefix-len d == prefix)
+            (attrNames all-switches));
+        };
+      }) (non-optional-deps ++ switched-deps));
   in log "All enabled dependencies: ${concatStringsSep ", " (attrNames deps)}"
   deps;
 in {

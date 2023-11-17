@@ -1,8 +1,0 @@
-[package]
-name = "cargo-lab-rat"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-different-version-of-transduce = { path = "different-version-of-transduce" }
-transduce = "0.4.0"

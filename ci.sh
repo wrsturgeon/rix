@@ -13,7 +13,7 @@ do
   make -f ../build.mk
   if [ -f src/main.rs ]
   then
-    result/$dir
+    result/$(echo "$dir" | tr '-' '_')
   fi
   cd ..
 done
