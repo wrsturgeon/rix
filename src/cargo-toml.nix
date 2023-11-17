@@ -2,8 +2,8 @@ explicit-features:
 let
   # Imports
   inherit (builtins)
-    attrNames concatMap concatStringsSep elemAt filter filterMap getAttr hasAttr
-    length listToAttrs partition readFile tail toString trace typeOf;
+    attrNames concatMap concatStringsSep filter getAttr hasAttr length
+    listToAttrs readFile tail toString;
   concats = concatStringsSep "";
   splitString = # https://github.com/NixOS/nixpkgs/blob/master/lib/strings.nix#L614
     sep: s:
@@ -12,7 +12,10 @@ let
 
   # Read `Cargo.toml`
   cfg = fromTOML (readFile ./Cargo.toml);
-  pkg-name = cfg.package.name;
+  pkg-name = import ./canonicalize-names.nix cfg.package.name;
+
+  # Standardized log message tagged with the crate name
+  log = msg: val: builtins.trace "(in crate ${pkg-name}) ${msg}" val;
 
   # If features were specified, use them; otherwise, use an empty set
   available-features = if cfg ? features then cfg.features else { };
@@ -46,8 +49,7 @@ let
               inherit name;
               value = null;
             }) (getAttr feature available-features)) explicit-features));
-  in trace
-  "(in crate `${pkg-name}`) Your choice of features enabled the following switches: ${
+  in log "Your choice of features enabled the following switches: ${
     concatStringsSep ", " (map (s: ''"${s}"'') (attrNames enable))
   }" enable;
 
@@ -70,7 +72,10 @@ let
       inherit name;
       value = getAttr name cfg-dependencies;
     }) (non-optional-deps ++ switched-deps));
-  in trace "(in crate `${pkg-name}`) All enabled dependencies: ${
-    concatStringsSep ", " (attrNames deps)
-  }" deps;
-in dependencies
+  in log "All enabled dependencies: ${concatStringsSep ", " (attrNames deps)}"
+  deps;
+in {
+  name = pkg-name;
+  inherit (cfg.package) version;
+  inherit dependencies;
+}

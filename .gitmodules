@@ -1,0 +1,3 @@
+[submodule "examples/inator"]
+	path = examples/inator
+	url = https://github.com/wrsturgeon/inator
