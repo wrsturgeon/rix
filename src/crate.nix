@@ -1,6 +1,1 @@
-pkgs: name: features:
-derivation {
-  inherit (pkgs) system;
-  inherit name;
-  builder = pkgs.rustc;
-}
+pkgs: dir: import ./crate-with-features.nix pkgs dir null

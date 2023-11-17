@@ -7,5 +7,5 @@
   outputs = { flake-utils, nixpkgs, rix, self }:
     flake-utils.lib.eachDefaultSystem (system:
       let pkgs = import nixpkgs { inherit system; };
-      in { packages.default = rix.build pkgs ./.; });
+      in { packages.default = rix.crate pkgs ./.; });
 }

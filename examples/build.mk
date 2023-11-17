@@ -1,7 +1,7 @@
 result: flake.nix
-	git add -A
 	nix build
-	rm -f flake.nix flake.lock
+	find . -name 'flake.*' | xargs rm
 
 flake.nix: ../../flake.nix.template
-	cp $^ flake.nix
+	cp $< $@
+	git add $@
