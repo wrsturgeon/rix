@@ -1,2 +1,5 @@
 **/.DS_Store
 **/target
+**/Cargo.lock
+#  ^^^^^^^^^^ this is not a Rust project; we intentionally ignore Cargo's versioning
+**/examples/**/flake.*

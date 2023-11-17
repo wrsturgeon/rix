@@ -11,10 +11,13 @@ let
   main = import ./locate-main-file.nix src;
   args-crate = "--crate-name ${pname} --crate-type ${main.type} --edition=2021";
   args-opt = "-C opt-level=3 -C embed-bitcode=no";
+  link-deps = builtins.concatStringsSep ""
+    (map (dep-name: "--extern ${dep-name}=TODO ")
+      (builtins.attrNames cfg.dependencies));
 in pkgs.stdenv.mkDerivation {
   inherit pname src system version;
   buildPhase = ''
     mkdir -p $out
-    ${pkgs.rustc}/bin/rustc ${args-crate} ${main.file} --emit=dep-info,link ${args-opt} --out-dir $out
+    ${pkgs.rustc}/bin/rustc ${args-crate} ${main.file} --emit=dep-info,link ${link-deps}${args-opt} --out-dir $out
   '';
 }

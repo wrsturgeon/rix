@@ -25,7 +25,7 @@ let
   else
     throw "No `[package]` section in `Cargo.toml`";
   pkg-name = if cfg-package ? name then
-    import ./canonicalize-names.nix cfg-package.name
+    import ./canonicalize-name.nix cfg-package.name
   else
     throw "No `name` field under `[package]` in `Cargo.toml`";
 
@@ -84,7 +84,7 @@ let
 
   dependencies = let
     deps = listToAttrs (map (name: {
-      inherit name;
+      name = import ./canonicalize-name.nix name;
       value = getAttr name cfg-dependencies;
     }) (non-optional-deps ++ switched-deps));
   in log "All enabled dependencies: ${concatStringsSep ", " (attrNames deps)}"
