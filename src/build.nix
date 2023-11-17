@@ -1,1 +1,1 @@
-pkgs: src: import ./build-with-features.nix pkgs src null
+pkgs: dir: import ./build-with-features.nix pkgs dir null

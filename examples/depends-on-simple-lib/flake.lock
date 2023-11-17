@@ -37,12 +37,12 @@
     "rix": {
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-6Rf0fwhkPEk6CnMgBThSdrwQzAroIpu7IzThbP4PVPs=",
-        "path": "/nix/store/5ln0fdz08fpvcwpvjjda67z5qy477gi0-source",
+        "narHash": "sha256-39g+e2VyKE1b9i2tzhU0XANKeR5JJS74bbEtGr9L+Sg=",
+        "path": "/nix/store/rr5rr3r3lxhj07wr02kn9ayxxrf8g46p-source",
         "type": "path"
       },
       "original": {
-        "path": "/nix/store/5ln0fdz08fpvcwpvjjda67z5qy477gi0-source",
+        "path": "/nix/store/rr5rr3r3lxhj07wr02kn9ayxxrf8g46p-source",
         "type": "path"
       }
     },
